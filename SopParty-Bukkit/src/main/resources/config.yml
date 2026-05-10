@@ -1,0 +1,14 @@
+# SopParty Paper configuration
+
+# First sync runs as soon as the player lands on this backend. If > 0, schedules an extra sync after N ticks for late Velocity/Paper binds.
+party-sync-delay-ticks: 0
+
+# SopLocales (future): values may reference %soplocales_*% placeholders with PlaceholderAPI where applicable.
+messages:
+  command-players-only: '&cPlayers only.'
+  party-help: '&e/party create | invite | accept | deny | leave | kick | disband | transfer | list'
+  usage-invite: '&cUsage: /party invite <player>'
+  usage-kick: '&cUsage: /party kick <player>'
+  usage-transfer: '&cUsage: /party transfer <player>'
+  unknown-subcommand: '&cUnknown subcommand.'
+  protocol-error: '&cProtocol error.'

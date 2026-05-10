@@ -1,0 +1,9 @@
+{
+  "id": "sopparty",
+  "name": "SopParty",
+  "version": "${project.version}",
+  "authors": [
+    "E_NeLsOn"
+  ],
+  "main": "net.enelson.sopparty.velocity.SopPartyVelocityPlugin"
+}
