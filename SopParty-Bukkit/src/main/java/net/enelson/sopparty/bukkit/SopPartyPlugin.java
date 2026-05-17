@@ -76,7 +76,8 @@ public final class SopPartyPlugin extends JavaPlugin implements CommandExecutor,
     }
 
     void sendAmpersandConfigured(CommandSender sender, String ampersandConfigured) {
-        if (sender instanceof Player p) {
+        if (sender instanceof Player) {
+            Player p = (Player) sender;
             p.sendMessage(sectionText(AMP.deserialize(ampersandConfigured)));
             return;
         }

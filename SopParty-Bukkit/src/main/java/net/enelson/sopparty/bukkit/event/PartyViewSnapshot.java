@@ -1,6 +1,8 @@
 package net.enelson.sopparty.bukkit.event;
 
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.UUID;
 
 /**
@@ -15,7 +17,7 @@ public final class PartyViewSnapshot {
     public PartyViewSnapshot(UUID partyId, UUID leaderId, List<UUID> members) {
         this.partyId = partyId;
         this.leaderId = leaderId;
-        this.members = List.copyOf(members);
+        this.members = Collections.unmodifiableList(new ArrayList<UUID>(members));
     }
 
     public UUID getPartyId() {

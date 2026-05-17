@@ -86,7 +86,7 @@ final class PartyMemberCache {
      * Authoritative reservation key for this party UUID on the proxy ( Velocity sync ).
      */
     void applyReservation(PartyProtocol.DecodedPartyReservation d) {
-        if (!d.hasReservation || d.gameKey == null || d.gameKey.isBlank()) {
+        if (!d.hasReservation || d.gameKey == null || d.gameKey.trim().isEmpty()) {
             reservationsByPartyId.remove(d.partyId);
             return;
         }

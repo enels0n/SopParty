@@ -45,6 +45,8 @@ public final class SopPartyVelocityPlugin {
                 com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier.from(PartyProtocol.CHANNEL));
         server.getEventManager().register(this, new VelocityBackendMessageListener(logger, partyService));
         server.getEventManager().register(this, new VelocityPartyServerSwitchListener(partyService));
+        server.getEventManager().register(this, new VelocityPartyConnectionListener(partyService));
+        server.getEventManager().register(this, new VelocityPartyPreConnectListener(partyService));
         server.getScheduler()
                 .buildTask(this, partyService::pruneInvites)
                 .repeat(Duration.ofSeconds(boot.settings().invitePruneIntervalSeconds()))

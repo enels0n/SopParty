@@ -79,6 +79,44 @@ public final class VelocityPartyService {
     }
 
     /**
+     * Proxy disconnect hook: ensure offline players are removed from party state so backend snapshots
+     * never keep stale members that can block minigame queue checks.
+     */
+    public void handleDisconnect(UUID playerId) {
+        pendingInvites.remove(playerId);
+        leave(playerId);
+    }
+
+    /**
+     * Returns deny reason when a non-leader party member tries to switch away from leader's backend.
+     * Reservation is optional context for message placeholders only.
+     */
+    public Optional<String> serverSwitchBlockReason(UUID actorUuid, String targetServerName) {
+        Optional<VelocityParty> opt = getParty(actorUuid);
+        if (!opt.isPresent()) {
+            return Optional.empty();
+        }
+        VelocityParty p = opt.get();
+        if (p.getLeader().equals(actorUuid)) {
+            return Optional.empty();
+        }
+        String reservation = partyReservations.getOrDefault(p.getId(), "");
+        Optional<Player> leader = proxy.getPlayer(p.getLeader());
+        if (!leader.isPresent()) {
+            return Optional.empty();
+        }
+        Optional<RegisteredServer> leaderServer = leader.get().getCurrentServer().map(sc -> sc.getServer());
+        if (!leaderServer.isPresent()) {
+            return Optional.empty();
+        }
+        String leaderServerName = leaderServer.get().getServerInfo().getName();
+        if (targetServerName != null && targetServerName.equalsIgnoreCase(leaderServerName)) {
+            return Optional.empty();
+        }
+        return Optional.of(msgs.reserveMemberSwitchBlocked(resolveName(p.getLeader()), leaderServerName, reservation));
+    }
+
+    /**
      * Leader-follow behavior: when the leader reaches a backend, move online members there too.
      */
     public void followLeaderToServer(UUID actorUuid, RegisteredServer target) {

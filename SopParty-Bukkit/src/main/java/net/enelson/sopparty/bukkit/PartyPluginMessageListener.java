@@ -55,7 +55,7 @@ final class PartyPluginMessageListener implements PluginMessageListener {
             } else if (op == PartyProtocol.P2S_PARTY_RESERVATION) {
                 PartyProtocol.DecodedPartyReservation r = PartyProtocol.decodePartyReservation(message);
                 cache.applyReservation(r);
-                Optional<String> key = r.hasReservation && r.gameKey != null && !r.gameKey.isBlank()
+                Optional<String> key = r.hasReservation && r.gameKey != null && !r.gameKey.trim().isEmpty()
                         ? Optional.of(r.gameKey)
                         : Optional.empty();
                 plugin.getServer()

@@ -20,7 +20,10 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.release>17</maven.compiler.release>
+        <maven.compiler.source.bukkit>1.8</maven.compiler.source.bukkit>
+        <maven.compiler.target.bukkit>1.8</maven.compiler.target.bukkit>
+        <maven.compiler.source.velocity>17</maven.compiler.source.velocity>
+        <maven.compiler.target.velocity>17</maven.compiler.target.velocity>
         <!-- Targets Paper/Spigot 1.16.5 servers (PLUGIN_DEVELOPMENT_RULES: 1.16.5 first).
              io.papermc.paper:paper-api:1.16.5-R0.1-SNAPSHOT is not reliably resolvable from Maven; Bukkit modules use org.spigotmc:spigot-api plus provided Adventure. -->
         <paper.bukkit.version>1.16.5-R0.1-SNAPSHOT</paper.bukkit.version>
@@ -51,7 +54,8 @@
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>3.13.0</version>
                     <configuration>
-                        <release>${maven.compiler.release}</release>
+                        <source>${maven.compiler.source.bukkit}</source>
+                        <target>${maven.compiler.target.bukkit}</target>
                     </configuration>
                 </plugin>
             </plugins>

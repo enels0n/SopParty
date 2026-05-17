@@ -58,6 +58,7 @@ public final class VelocityPartyMessages {
 
     private final String reserveNotInParty;
     private final String reserveLeaderOnly;
+    private final String reserveMemberSwitchBlocked;
 
     private static String r(Properties p, String key, String fallback) {
         String v = p.getProperty(key);
@@ -124,6 +125,11 @@ public final class VelocityPartyMessages {
 
         reserveNotInParty = r(p, "msg.reserve.err.not-in-party", "&cYou are not in a party.");
         reserveLeaderOnly = r(p, "msg.reserve.err.leader-only", "&cOnly the party leader may set reservations.");
+        reserveMemberSwitchBlocked = r(
+                p,
+                "msg.reserve.err.member-switch-blocked",
+                "&cYour party is reserved for &f{2}&c. Follow leader &f{0}&c on server &f{1}&c."
+        );
     }
 
     public String createAlreadyInParty() {
@@ -292,5 +298,9 @@ public final class VelocityPartyMessages {
 
     String reserveLeaderOnly() {
         return reserveLeaderOnly;
+    }
+
+    String reserveMemberSwitchBlocked(String leaderName, String leaderServer, String reservationKey) {
+        return sub(reserveMemberSwitchBlocked, leaderName, leaderServer, reservationKey);
     }
 }
