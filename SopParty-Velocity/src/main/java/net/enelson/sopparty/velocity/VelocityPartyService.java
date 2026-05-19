@@ -7,7 +7,9 @@ import net.enelson.sopparty.protocol.PartyProtocol;
 import org.slf4j.Logger;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -69,6 +71,7 @@ public final class VelocityPartyService {
 
     public void handleSyncRequest(UUID playerId) {
         broadcastPartyViewOf(playerId);
+        broadcastOnlinePlayers();
     }
 
     /**
@@ -76,6 +79,18 @@ public final class VelocityPartyService {
      */
     public void refreshPartyOnBackend(UUID playerId) {
         broadcastPartyViewOf(playerId);
+    }
+
+    public void broadcastOnlinePlayers() {
+        try {
+            List<PartyProtocol.OnlinePlayerEntry> players = new ArrayList<PartyProtocol.OnlinePlayerEntry>();
+            for (Player player : proxy.getAllPlayers()) {
+                players.add(new PartyProtocol.OnlinePlayerEntry(player.getUniqueId(), player.getUsername()));
+            }
+            broadcaster.broadcast(PartyProtocol.encodeOnlinePlayers(players));
+        } catch (IOException e) {
+            logger.warn("Online player snapshot encode failed: {}", e.toString());
+        }
     }
 
     /**

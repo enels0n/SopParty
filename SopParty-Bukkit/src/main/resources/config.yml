@@ -3,6 +3,10 @@
 # First sync runs as soon as the player lands on this backend. If > 0, schedules an extra sync after N ticks for late Velocity/Paper binds.
 party-sync-delay-ticks: 0
 
+tab-complete:
+  min-prefix-length: 2
+  max-results: 20
+
 # SopLocales (future): values may reference %soplocales_*% placeholders with PlaceholderAPI where applicable.
 messages:
   command-players-only: '&cPlayers only.'

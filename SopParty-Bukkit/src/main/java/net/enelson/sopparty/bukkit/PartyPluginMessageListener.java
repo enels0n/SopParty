@@ -18,11 +18,17 @@ final class PartyPluginMessageListener implements PluginMessageListener {
     private final SopPartyPlugin plugin;
     private final Logger logger;
     private final PartyMemberCache cache;
+    private final ProxyOnlinePlayerDirectory onlinePlayerDirectory;
 
-    PartyPluginMessageListener(SopPartyPlugin plugin, Logger logger, PartyMemberCache cache) {
+    PartyPluginMessageListener(
+            SopPartyPlugin plugin,
+            Logger logger,
+            PartyMemberCache cache,
+            ProxyOnlinePlayerDirectory onlinePlayerDirectory) {
         this.plugin = plugin;
         this.logger = logger;
         this.cache = cache;
+        this.onlinePlayerDirectory = onlinePlayerDirectory;
     }
 
     @Override
@@ -61,6 +67,8 @@ final class PartyPluginMessageListener implements PluginMessageListener {
                 plugin.getServer()
                         .getPluginManager()
                         .callEvent(new SopPartyReservationSyncEvent(r.partyId, key));
+            } else if (op == PartyProtocol.P2S_ONLINE_PLAYERS) {
+                onlinePlayerDirectory.replaceAll(PartyProtocol.decodeOnlinePlayers(message));
             }
         } catch (IOException e) {
             logger.warning("SopParty decode error: " + e.getMessage());

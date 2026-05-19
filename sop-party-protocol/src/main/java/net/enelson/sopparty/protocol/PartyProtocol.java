@@ -31,6 +31,8 @@ public final class PartyProtocol {
     public static final byte P2S_PARTY_CHAT_RELAY = 0x12;
     /** Velocity → all backends: sync party reservation slot (opaque game key etc.). */
     public static final byte P2S_PARTY_RESERVATION = 0x13;
+    /** Velocity → all backends: snapshot of proxy-wide online player names for tab-complete. */
+    public static final byte P2S_ONLINE_PLAYERS = 0x14;
 
     public enum Action {
         CREATE((byte) 1),
@@ -288,6 +290,43 @@ public final class PartyProtocol {
         boolean has = in.readBoolean();
         String game = has ? readUtf(in) : "";
         return new DecodedPartyReservation(partyId, has, game);
+    }
+
+    public static final class OnlinePlayerEntry {
+        public final UUID playerId;
+        public final String playerName;
+
+        public OnlinePlayerEntry(UUID playerId, String playerName) {
+            this.playerId = playerId;
+            this.playerName = playerName;
+        }
+    }
+
+    public static byte[] encodeOnlinePlayers(List<OnlinePlayerEntry> players) throws IOException {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        DataOutputStream out = new DataOutputStream(bos);
+        out.writeByte(P2S_ONLINE_PLAYERS);
+        out.writeInt(players.size());
+        for (OnlinePlayerEntry player : players) {
+            writeUuid(out, player.playerId);
+            writeUtf(out, player.playerName == null ? "" : player.playerName);
+        }
+        out.flush();
+        return bos.toByteArray();
+    }
+
+    public static List<OnlinePlayerEntry> decodeOnlinePlayers(byte[] data) throws IOException {
+        DataInputStream in = new DataInputStream(new ByteArrayInputStream(data));
+        byte op = in.readByte();
+        if (op != P2S_ONLINE_PLAYERS) {
+            throw new IOException("Unexpected opcode: " + op);
+        }
+        int size = in.readInt();
+        List<OnlinePlayerEntry> playerNames = new ArrayList<OnlinePlayerEntry>(Math.max(size, 0));
+        for (int i = 0; i < size; i++) {
+            playerNames.add(new OnlinePlayerEntry(readUuid(in), readUtf(in)));
+        }
+        return playerNames;
     }
 
     private static void writeUuid(DataOutputStream out, UUID uuid) throws IOException {

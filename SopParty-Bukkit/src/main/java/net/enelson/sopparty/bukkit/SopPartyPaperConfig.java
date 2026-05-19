@@ -13,6 +13,8 @@ final class SopPartyPaperConfig {
     private String msgUsageTransfer;
     private String msgUnknownSubcommand;
     private String msgProtocolError;
+    private int tabCompleteMinPrefixLength;
+    private int tabCompleteMaxResults;
 
     void load(JavaPlugin plugin) {
         plugin.saveDefaultConfig();
@@ -29,6 +31,8 @@ final class SopPartyPaperConfig {
         msgUsageTransfer = str(c, "messages.usage-transfer", "&cUsage: /party transfer <player>");
         msgUnknownSubcommand = str(c, "messages.unknown-subcommand", "&cUnknown subcommand.");
         msgProtocolError = str(c, "messages.protocol-error", "&cProtocol error.");
+        tabCompleteMinPrefixLength = Math.max(0, c.getInt("tab-complete.min-prefix-length", 2));
+        tabCompleteMaxResults = Math.max(1, c.getInt("tab-complete.max-results", 20));
     }
 
     private static String str(FileConfiguration c, String path, String def) {
@@ -66,5 +70,13 @@ final class SopPartyPaperConfig {
 
     String messageProtocolError() {
         return msgProtocolError;
+    }
+
+    int tabCompleteMinPrefixLength() {
+        return tabCompleteMinPrefixLength;
+    }
+
+    int tabCompleteMaxResults() {
+        return tabCompleteMaxResults;
     }
 }

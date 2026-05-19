@@ -20,6 +20,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -31,8 +32,10 @@ public final class SopPartyPlugin extends JavaPlugin implements CommandExecutor,
 
     private final SopPartyPaperConfig paperConfig = new SopPartyPaperConfig();
     private final PartyMemberCache memberCache = new PartyMemberCache();
+    private final ProxyOnlinePlayerDirectory onlinePlayerDirectory = new ProxyOnlinePlayerDirectory();
     private final SopPartyApi partyApi = new DefaultSopPartyApi(this, memberCache);
-    private final PartyPluginMessageListener incoming = new PartyPluginMessageListener(this, getLogger(), memberCache);
+    private final PartyPluginMessageListener incoming =
+            new PartyPluginMessageListener(this, getLogger(), memberCache, onlinePlayerDirectory);
 
     @Override
     public void onEnable() {
@@ -203,24 +206,71 @@ public final class SopPartyPlugin extends JavaPlugin implements CommandExecutor,
             }
             return out;
         }
-        if (args.length == 2 && "kick".equalsIgnoreCase(args[0])) {
+        if (args.length == 2) {
+            String sub = args[0].toLowerCase(Locale.ROOT);
             String prefix = args[1].toLowerCase(Locale.ROOT);
-            List<String> out = new ArrayList<String>();
-            for (UUID memberId : memberCache.getMemberUuids(player.getUniqueId())) {
-                if (memberId.equals(player.getUniqueId())) {
-                    continue;
-                }
-                Player online = Bukkit.getPlayer(memberId);
-                if (online == null) {
-                    continue;
-                }
-                String name = online.getName();
-                if (name.toLowerCase(Locale.ROOT).startsWith(prefix)) {
-                    out.add(name);
-                }
+            if (prefix.length() < paperConfig.tabCompleteMinPrefixLength()) {
+                return Collections.emptyList();
             }
-            return out;
+            if ("invite".equals(sub) || "accept".equals(sub) || "deny".equals(sub)) {
+                return suggestVisiblePlayers(player, prefix);
+            }
+            if ("kick".equals(sub) || "transfer".equals(sub)) {
+                return suggestPartyMembers(player, prefix);
+            }
         }
         return Collections.emptyList();
+    }
+
+    private List<String> suggestVisiblePlayers(Player actor, String prefixLower) {
+        int limit = paperConfig.tabCompleteMaxResults();
+        if (onlinePlayerDirectory.hasSnapshot()) {
+            return onlinePlayerDirectory.suggest(prefixLower, limit, actor.getUniqueId());
+        }
+        List<String> out = new ArrayList<String>();
+        List<Player> players = new ArrayList<Player>(Bukkit.getOnlinePlayers());
+        players.sort(Comparator.comparing(Player::getName, String.CASE_INSENSITIVE_ORDER));
+        for (Player online : players) {
+            if (online.getUniqueId().equals(actor.getUniqueId())) {
+                continue;
+            }
+            String name = online.getName();
+            if (!name.toLowerCase(Locale.ROOT).startsWith(prefixLower)) {
+                continue;
+            }
+            out.add(name);
+            if (out.size() >= limit) {
+                break;
+            }
+        }
+        return out;
+    }
+
+    private List<String> suggestPartyMembers(Player actor, String prefixLower) {
+        int limit = paperConfig.tabCompleteMaxResults();
+        List<String> out = new ArrayList<String>();
+        for (UUID memberId : memberCache.getMemberUuids(actor.getUniqueId())) {
+            if (memberId.equals(actor.getUniqueId())) {
+                continue;
+            }
+            String name = resolveKnownPlayerName(memberId);
+            if (name == null || !name.toLowerCase(Locale.ROOT).startsWith(prefixLower)) {
+                continue;
+            }
+            out.add(name);
+            if (out.size() >= limit) {
+                break;
+            }
+        }
+        out.sort(String.CASE_INSENSITIVE_ORDER);
+        return out;
+    }
+
+    private String resolveKnownPlayerName(UUID playerId) {
+        Player online = Bukkit.getPlayer(playerId);
+        if (online != null) {
+            return online.getName();
+        }
+        return onlinePlayerDirectory.nameOf(playerId);
     }
 }
