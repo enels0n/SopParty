@@ -3,6 +3,8 @@ main: net.enelson.sopparty.bukkit.SopPartyPlugin
 version: ${project.version}
 api-version: '1.16'
 description: Party system for Paper & Spigot 1.16.5+. Authoritative state on Velocity.
+softdepend:
+  - PlaceholderAPI
 
 commands:
   party:

@@ -61,4 +61,17 @@ final class VelocityPartyBroadcaster {
             broadcast(payload);
         }
     }
+
+    boolean sendToPlayerBackend(UUID playerId, byte[] payload) {
+        Optional<Player> optionalPlayer = proxy.getPlayer(playerId);
+        if (!optionalPlayer.isPresent()) {
+            return false;
+        }
+        Optional<ServerConnection> connection = optionalPlayer.get().getCurrentServer();
+        if (!connection.isPresent()) {
+            return false;
+        }
+        RegisteredServer backend = connection.get().getServer();
+        return backend.sendPluginMessage(MinecraftChannelIdentifier.from(PartyProtocol.CHANNEL), payload);
+    }
 }

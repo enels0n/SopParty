@@ -33,6 +33,8 @@ public final class PartyProtocol {
     public static final byte P2S_PARTY_RESERVATION = 0x13;
     /** Velocity → all backends: snapshot of proxy-wide online player names for tab-complete. */
     public static final byte P2S_ONLINE_PLAYERS = 0x14;
+    /** Velocity → Bukkit backend: deliver player-facing party message so backend can apply PAPI before sending. */
+    public static final byte P2S_BACKEND_MESSAGE = 0x15;
 
     public enum Action {
         CREATE((byte) 1),
@@ -327,6 +329,35 @@ public final class PartyProtocol {
             playerNames.add(new OnlinePlayerEntry(readUuid(in), readUtf(in)));
         }
         return playerNames;
+    }
+
+    public static byte[] encodeBackendMessage(UUID recipient, String rawAmpersandMessage) throws IOException {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        DataOutputStream out = new DataOutputStream(bos);
+        out.writeByte(P2S_BACKEND_MESSAGE);
+        writeUuid(out, recipient);
+        writeUtf(out, rawAmpersandMessage == null ? "" : rawAmpersandMessage);
+        out.flush();
+        return bos.toByteArray();
+    }
+
+    public static final class DecodedBackendMessage {
+        public final UUID recipient;
+        public final String rawAmpersandMessage;
+
+        public DecodedBackendMessage(UUID recipient, String rawAmpersandMessage) {
+            this.recipient = recipient;
+            this.rawAmpersandMessage = rawAmpersandMessage;
+        }
+    }
+
+    public static DecodedBackendMessage decodeBackendMessage(byte[] data) throws IOException {
+        DataInputStream in = new DataInputStream(new ByteArrayInputStream(data));
+        byte op = in.readByte();
+        if (op != P2S_BACKEND_MESSAGE) {
+            throw new IOException("Unexpected opcode: " + op);
+        }
+        return new DecodedBackendMessage(readUuid(in), readUtf(in));
     }
 
     private static void writeUuid(DataOutputStream out, UUID uuid) throws IOException {

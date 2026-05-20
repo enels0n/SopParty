@@ -1,5 +1,4 @@
 package net.enelson.sopparty.bukkit;
-
 import net.enelson.sopparty.api.SopPartyApi;
 import net.enelson.sopparty.protocol.PartyProtocol;
 import net.kyori.adventure.text.Component;
@@ -18,6 +17,7 @@ import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -29,6 +29,7 @@ public final class SopPartyPlugin extends JavaPlugin implements CommandExecutor,
 
     private static final LegacyComponentSerializer AMP = LegacyComponentSerializer.legacyAmpersand();
     private static final LegacyComponentSerializer SECTION = LegacyComponentSerializer.legacySection();
+    private Method placeholderApiSetPlaceholders;
 
     private final SopPartyPaperConfig paperConfig = new SopPartyPaperConfig();
     private final PartyMemberCache memberCache = new PartyMemberCache();
@@ -40,6 +41,7 @@ public final class SopPartyPlugin extends JavaPlugin implements CommandExecutor,
     @Override
     public void onEnable() {
         paperConfig.load(this);
+        hookPlaceholderApi();
 
         getServer().getServicesManager().register(SopPartyApi.class, partyApi, this, ServicePriority.Normal);
 
@@ -81,10 +83,42 @@ public final class SopPartyPlugin extends JavaPlugin implements CommandExecutor,
     void sendAmpersandConfigured(CommandSender sender, String ampersandConfigured) {
         if (sender instanceof Player) {
             Player p = (Player) sender;
-            p.sendMessage(sectionText(AMP.deserialize(ampersandConfigured)));
+            p.sendMessage(sectionText(AMP.deserialize(applyPlayerPlaceholders(p, ampersandConfigured))));
             return;
         }
         sender.sendMessage(ChatColor.translateAlternateColorCodes('&', ampersandConfigured));
+    }
+
+    void sendBackendPartyMessage(UUID recipient, String rawAmpersandMessage) {
+        Player player = Bukkit.getPlayer(recipient);
+        if (player == null || !player.isOnline()) {
+            return;
+        }
+        sendAmpersandConfigured(player, rawAmpersandMessage);
+    }
+
+    private String applyPlayerPlaceholders(Player player, String input) {
+        if (input == null || input.isEmpty()) {
+            return "";
+        }
+        if (placeholderApiSetPlaceholders == null || Bukkit.getPluginManager().getPlugin("PlaceholderAPI") == null) {
+            return input;
+        }
+        try {
+            Object resolved = placeholderApiSetPlaceholders.invoke(null, player, input);
+            return resolved instanceof String ? (String) resolved : input;
+        } catch (Throwable ignored) {
+            return input;
+        }
+    }
+
+    private void hookPlaceholderApi() {
+        try {
+            Class<?> apiClass = Class.forName("me.clip.placeholderapi.PlaceholderAPI");
+            placeholderApiSetPlaceholders = apiClass.getMethod("setPlaceholders", Player.class, String.class);
+        } catch (Throwable ignored) {
+            placeholderApiSetPlaceholders = null;
+        }
     }
 
     private static String sectionText(Component component) {

@@ -69,6 +69,9 @@ final class PartyPluginMessageListener implements PluginMessageListener {
                         .callEvent(new SopPartyReservationSyncEvent(r.partyId, key));
             } else if (op == PartyProtocol.P2S_ONLINE_PLAYERS) {
                 onlinePlayerDirectory.replaceAll(PartyProtocol.decodeOnlinePlayers(message));
+            } else if (op == PartyProtocol.P2S_BACKEND_MESSAGE) {
+                PartyProtocol.DecodedBackendMessage backendMessage = PartyProtocol.decodeBackendMessage(message);
+                plugin.sendBackendPartyMessage(backendMessage.recipient, backendMessage.rawAmpersandMessage);
             }
         } catch (IOException e) {
             logger.warning("SopParty decode error: " + e.getMessage());

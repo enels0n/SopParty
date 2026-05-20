@@ -575,6 +575,14 @@ public final class VelocityPartyService {
         if (pl.isEmpty()) {
             return;
         }
+        try {
+            byte[] payload = PartyProtocol.encodeBackendMessage(playerId, rawAmpersand);
+            if (broadcaster.sendToPlayerBackend(playerId, payload)) {
+                return;
+            }
+        } catch (IOException e) {
+            logger.warn("Backend party message encode failed for {}: {}", playerId, e.toString());
+        }
         pl.get().sendMessage(net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
                 .legacyAmpersand()
                 .deserialize(rawAmpersand));
