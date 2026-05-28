@@ -3,9 +3,19 @@
 # First sync runs as soon as the player lands on this backend. If > 0, schedules an extra sync after N ticks for late Velocity/Paper binds.
 party-sync-delay-ticks: 0
 
+# How long Bukkit waits for a valid proxy response before enabling standalone mode automatically.
+proxy-detection-timeout-ticks: 40
+
+standalone:
+  max-party-size: 8
+  invite-ttl-seconds: 120
+
 tab-complete:
   min-prefix-length: 2
   max-results: 20
+
+permissions:
+  reload: 'sopparty.admin.reload'
 
 # SopLocales (future): values may reference %soplocales_*% placeholders with PlaceholderAPI where applicable.
 messages:
@@ -13,6 +23,53 @@ messages:
   party-help: '&e/party create | invite | accept | deny | leave | kick | disband | transfer | list'
   usage-invite: '&cUsage: /party invite <player>'
   usage-kick: '&cUsage: /party kick <player>'
+  usage-reload: '&cUsage: /party reload'
   usage-transfer: '&cUsage: /party transfer <player>'
+  usage-sopparty-reload: '&cUsage: /sopparty reload'
+  no-permission: '&cYou do not have permission.'
+  proxy-detecting: '&eSopParty is checking for a proxy. Try again in a moment.'
+  reload-local-ok: '&aSopParty local config reloaded.'
+  reload-use-proxy-console: '&eVelocity mode is active. Run /sopparty reload in the Velocity console.'
+  standalone-create-already-in-party: '&cYou are already in a party.'
+  standalone-create-success: '&aParty created. You are the leader.'
+  standalone-invite-not-in-party: '&cYou are not in a party. Use /party create first.'
+  standalone-invite-leader-only: '&cOnly the leader can invite.'
+  standalone-invite-need-name: '&cSpecify a player name.'
+  standalone-invite-player-offline: '&cPlayer not found online.'
+  standalone-invite-self: '&cYou cannot invite yourself.'
+  standalone-invite-target-in-party: '&cThat player is already in a party.'
+  standalone-invite-party-full: '&cParty is full.'
+  standalone-invite-sent: '&aInvite sent to &f{0}&a.'
+  standalone-invite-notify-target: '&eParty invite from &f{0}&e. /party accept {1}'
+  standalone-accept-no-invite: '&cNo pending invite.'
+  standalone-accept-expired: '&cInvite expired.'
+  standalone-accept-mismatch: '&cThat invite does not match.'
+  standalone-accept-party-missing: '&cParty no longer exists.'
+  standalone-accept-already-in-party: '&cYou are already in a party.'
+  standalone-accept-party-full: '&cParty became full.'
+  standalone-accept-success: '&aJoined the party.'
+  standalone-accept-broadcast-join: '&f{0} &ajoined the party.'
+  standalone-deny-notify-inviter: '&e{0} &cdenied the invite.'
+  standalone-deny-success: '&eInvite denied.'
+  standalone-not-in-party: '&cYou are not in a party.'
+  standalone-leader-only-kick: '&cOnly the leader can kick.'
+  standalone-leader-only-disband: '&cOnly the leader can disband.'
+  standalone-leader-only-transfer: '&cOnly the leader can transfer.'
+  standalone-kick-not-online: '&cPlayer not online.'
+  standalone-kick-not-in-your-party: '&cThat player is not in your party.'
+  standalone-leave-success: '&eYou left the party.'
+  standalone-leadership-transferred: '&eLeadership transferred to &f{0}&e.'
+  standalone-kick-self-hint: '&cKick yourself via /party leave.'
+  standalone-kick-target-notice: '&cYou were kicked from the party.'
+  standalone-kick-leader-ok: '&aPlayer kicked.'
+  standalone-kick-broadcast: '&f{0} &ewas kicked.'
+  standalone-disband-notice: '&cParty disbanded.'
+  standalone-transfer-not-on-party: '&cThat player is not in your party.'
+  standalone-transfer-broadcast: '&e{0} &ais now party leader.'
+  standalone-list-prefix: '&6Party &7(&f{0}&7 leader)&6:'
+  standalone-list-member: ' &f{0}'
+  standalone-reserve-not-in-party: '&cYou are not in a party.'
+  standalone-reserve-leader-only: '&cOnly the party leader may set reservations.'
+  standalone-reload-ok: '&aSopParty standalone config reloaded. Max party size: &f{0}&a.'
   unknown-subcommand: '&cUnknown subcommand.'
   protocol-error: '&cProtocol error.'

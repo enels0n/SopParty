@@ -11,12 +11,12 @@ import java.io.IOException;
 final class VelocityBackendMessageListener {
 
     private final Logger logger;
-    private final VelocityPartyService parties;
+    private final SopPartyVelocityPlugin plugin;
     private final MinecraftChannelIdentifier channelId;
 
-    VelocityBackendMessageListener(Logger logger, VelocityPartyService parties) {
+    VelocityBackendMessageListener(Logger logger, SopPartyVelocityPlugin plugin) {
         this.logger = logger;
-        this.parties = parties;
+        this.plugin = plugin;
         this.channelId = MinecraftChannelIdentifier.from(PartyProtocol.CHANNEL);
     }
 
@@ -35,12 +35,17 @@ final class VelocityBackendMessageListener {
         try {
             byte op = data[0];
             if (op == PartyProtocol.C2P_SYNC_REQUEST) {
-                parties.handleSyncRequest(PartyProtocol.decodeSyncRequest(data));
+                plugin.getPartyService().handleSyncRequest(PartyProtocol.decodeSyncRequest(data));
             } else if (op == PartyProtocol.C2P_ACTION) {
-                parties.handleAction(PartyProtocol.decodeAction(data));
+                PartyProtocol.DecodedAction action = PartyProtocol.decodeAction(data);
+                if (action.action == PartyProtocol.Action.RELOAD) {
+                    plugin.reloadFromBackend(action.actor);
+                } else {
+                    plugin.getPartyService().handleAction(action);
+                }
             } else if (op == PartyProtocol.C2P_PARTY_RESERVE) {
                 PartyProtocol.DecodedPartyReserve rsv = PartyProtocol.decodePartyReserve(data);
-                parties.handlePartyReserve(rsv.actor, rsv.gameKey);
+                plugin.getPartyService().handlePartyReserve(rsv.actor, rsv.gameKey);
             }
         } catch (IOException e) {
             logger.warn("Bad SopParty packet from backend: {}", e.toString());

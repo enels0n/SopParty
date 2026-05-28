@@ -23,9 +23,9 @@ public final class VelocityPartyService {
     private final ProxyServer proxy;
     private final Logger logger;
     private final VelocityPartyBroadcaster broadcaster;
-    private final VelocityPartyMessages msgs;
-    private final int maxPartySize;
-    private final long inviteTtlMillis;
+    private volatile VelocityPartyMessages msgs;
+    private volatile int maxPartySize;
+    private volatile long inviteTtlMillis;
 
     private final Map<UUID, UUID> partyOfPlayer = new ConcurrentHashMap<UUID, UUID>();
     private final Map<UUID, VelocityParty> parties = new ConcurrentHashMap<UUID, VelocityParty>();
@@ -59,6 +59,20 @@ public final class VelocityPartyService {
         this.msgs = msgs;
         this.maxPartySize = settings.maxPartySize();
         this.inviteTtlMillis = settings.inviteTtlMillis();
+    }
+
+    public void reloadConfiguration(VelocityPartySettings settings, VelocityPartyMessages msgs) {
+        this.msgs = msgs;
+        this.maxPartySize = settings.maxPartySize();
+        this.inviteTtlMillis = settings.inviteTtlMillis();
+    }
+
+    public void sendSystemMessage(UUID playerId, String rawAmpersand) {
+        message(playerId, rawAmpersand);
+    }
+
+    public int getMaxPartySize() {
+        return maxPartySize;
     }
 
     public Optional<VelocityParty> getParty(UUID playerId) {
@@ -136,7 +150,7 @@ public final class VelocityPartyService {
      */
     public void followLeaderToServer(UUID actorUuid, RegisteredServer target) {
         Optional<VelocityParty> opt = getParty(actorUuid);
-        if (opt.isEmpty()) {
+        if (!opt.isPresent()) {
             return;
         }
         VelocityParty p = opt.get();
@@ -150,7 +164,7 @@ public final class VelocityPartyService {
                 continue;
             }
             Optional<Player> member = proxy.getPlayer(memberId);
-            if (member.isEmpty()) {
+            if (!member.isPresent()) {
                 continue;
             }
             Optional<RegisteredServer> current = member.get().getCurrentServer().map(sc -> sc.getServer());
@@ -212,7 +226,7 @@ public final class VelocityPartyService {
     private void broadcastReservation(UUID partyUuid) {
         try {
             String k = partyReservations.get(partyUuid);
-            boolean has = k != null && !k.isBlank();
+            boolean has = k != null && !k.trim().isEmpty();
             byte[] relay = PartyProtocol.encodePartyReservation(partyUuid, has, has ? k : "");
             broadcaster.broadcast(relay);
         } catch (IOException e) {
@@ -392,11 +406,11 @@ public final class VelocityPartyService {
     private void moveInviteeToLeaderServer(UUID inviteeUuid, UUID leaderUuid) {
         Optional<Player> invitee = proxy.getPlayer(inviteeUuid);
         Optional<Player> leader = proxy.getPlayer(leaderUuid);
-        if (invitee.isEmpty() || leader.isEmpty()) {
+        if (!invitee.isPresent() || !leader.isPresent()) {
             return;
         }
         Optional<RegisteredServer> leaderServer = leader.get().getCurrentServer().map(sc -> sc.getServer());
-        if (leaderServer.isEmpty()) {
+        if (!leaderServer.isPresent()) {
             return;
         }
         String targetName = leaderServer.get().getServerInfo().getName();
@@ -572,7 +586,7 @@ public final class VelocityPartyService {
 
     private void message(UUID playerId, String rawAmpersand) {
         Optional<Player> pl = proxy.getPlayer(playerId);
-        if (pl.isEmpty()) {
+        if (!pl.isPresent()) {
             return;
         }
         try {

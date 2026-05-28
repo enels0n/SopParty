@@ -8,6 +8,7 @@ It uses `Velocity` as the authoritative party layer for network setups and provi
 - leave, kick, transfer, and list
 - PlaceholderAPI-ready player-facing messages through backend delivery
 - proxy-wide tab completion with standalone local fallback
+- automatic standalone fallback on a single Bukkit/Paper server when no Velocity response is detected
 
 ## Modules
 
@@ -45,6 +46,13 @@ Network mode:
 Standalone/local backend features:
 
 - local tab completion falls back to Bukkit online players when no proxy-wide snapshot is available
+- standalone party logic activates automatically if no valid Velocity response is received after startup probes
+
+Standalone Bukkit config keys:
+
+- `standalone.max-party-size`
+- `standalone.invite-ttl-seconds`
+- `proxy-detection-timeout-ticks`
 
 Optional:
 
@@ -66,6 +74,19 @@ Typical actions:
 - `kick`
 - `transfer`
 - `list`
+- `reload` - reloads Velocity `sopparty.properties` through the Bukkit bridge (`sopparty.admin.reload`)
+
+## Velocity Config
+
+The network-authoritative settings live on the proxy in:
+
+- `plugins/sopparty/sopparty.properties`
+
+Key options:
+
+- `max-party-size`
+- `invite-ttl-seconds`
+- `invite-prune-interval-seconds`
 
 ## For Integrations
 

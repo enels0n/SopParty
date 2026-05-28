@@ -45,7 +45,8 @@ public final class PartyProtocol {
         DISBAND((byte) 6),
         KICK((byte) 7),
         TRANSFER((byte) 8),
-        LIST((byte) 9);
+        LIST((byte) 9),
+        RELOAD((byte) 10);
 
         private final byte id;
 

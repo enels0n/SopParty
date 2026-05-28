@@ -1,11 +1,9 @@
 package net.enelson.sopparty.bukkit;
 
 import net.enelson.sopparty.api.SopPartyApi;
-import net.enelson.sopparty.protocol.PartyProtocol;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -52,16 +50,7 @@ final class DefaultSopPartyApi implements SopPartyApi {
 
     @Override
     public boolean sendReservationRequest(Player player, String reservationKeyOrBlank) {
-        if (!player.isOnline()) {
-            return false;
-        }
-        String key = reservationKeyOrBlank != null ? reservationKeyOrBlank.trim() : "";
-        try {
-            byte[] payload = PartyProtocol.encodePartyReserve(player.getUniqueId(), key);
-            player.sendPluginMessage(plugin, PartyProtocol.CHANNEL, payload);
-            return true;
-        } catch (IOException e) {
-            return false;
-        }
+        return plugin instanceof SopPartyPlugin
+                && ((SopPartyPlugin) plugin).sendReservationRequest(player, reservationKeyOrBlank);
     }
 }

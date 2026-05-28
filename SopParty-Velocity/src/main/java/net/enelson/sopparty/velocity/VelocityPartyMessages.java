@@ -59,10 +59,13 @@ public final class VelocityPartyMessages {
     private final String reserveNotInParty;
     private final String reserveLeaderOnly;
     private final String reserveMemberSwitchBlocked;
+    private final String reloadNoPermission;
+    private final String reloadSuccess;
+    private final String reloadFailure;
 
     private static String r(Properties p, String key, String fallback) {
         String v = p.getProperty(key);
-        return v != null && !v.isBlank() ? v : fallback;
+        return v != null && !v.trim().isEmpty() ? v : fallback;
     }
 
     private static String sub(String tmpl, Object... replacements) {
@@ -130,6 +133,9 @@ public final class VelocityPartyMessages {
                 "msg.reserve.err.member-switch-blocked",
                 "&cYour party is reserved for &f{2}&c. Follow leader &f{0}&c on server &f{1}&c."
         );
+        reloadNoPermission = r(p, "msg.reload.err.no-permission", "&cYou do not have permission to reload SopParty.");
+        reloadSuccess = r(p, "msg.reload.ok", "&aSopParty config reloaded. Max party size: &f{0}&a.");
+        reloadFailure = r(p, "msg.reload.err.failed", "&cFailed to reload SopParty config. Check proxy log.");
     }
 
     public String createAlreadyInParty() {
@@ -302,5 +308,17 @@ public final class VelocityPartyMessages {
 
     String reserveMemberSwitchBlocked(String leaderName, String leaderServer, String reservationKey) {
         return sub(reserveMemberSwitchBlocked, leaderName, leaderServer, reservationKey);
+    }
+
+    String reloadNoPermission() {
+        return reloadNoPermission;
+    }
+
+    String reloadSuccess(int maxPartySize) {
+        return sub(reloadSuccess, maxPartySize);
+    }
+
+    String reloadFailure() {
+        return reloadFailure;
     }
 }

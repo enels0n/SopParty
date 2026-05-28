@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Properties;
@@ -34,11 +35,11 @@ final class VelocityPartyConfigLoader {
                 if (in != null) {
                     Files.copy(in, configFile);
                 } else {
-                    Files.writeString(configFile, """
-                            max-party-size=8
-                            invite-ttl-seconds=120
-                            invite-prune-interval-seconds=30
-                            """);
+                    String defaultConfig =
+                            "max-party-size=" + VelocityPartySettings.DEFAULT_MAX_PARTY_SIZE + "\n"
+                                    + "invite-ttl-seconds=" + VelocityPartySettings.DEFAULT_INVITE_TTL_SECONDS + "\n"
+                                    + "invite-prune-interval-seconds=" + VelocityPartySettings.DEFAULT_INVITE_PRUNE_INTERVAL_SECONDS + "\n";
+                    Files.write(configFile, defaultConfig.getBytes(StandardCharsets.UTF_8));
                 }
             }
             logger.info("Created default SopParty config at {}", configFile.toAbsolutePath());
@@ -50,16 +51,16 @@ final class VelocityPartyConfigLoader {
         }
 
         VelocityPartySettings settings = new VelocityPartySettings(
-                parseInt(effective, "max-party-size", 8),
-                parseInt(effective, "invite-ttl-seconds", 120),
-                parseInt(effective, "invite-prune-interval-seconds", 30));
+                parseInt(effective, "max-party-size", VelocityPartySettings.DEFAULT_MAX_PARTY_SIZE),
+                parseInt(effective, "invite-ttl-seconds", VelocityPartySettings.DEFAULT_INVITE_TTL_SECONDS),
+                parseInt(effective, "invite-prune-interval-seconds", VelocityPartySettings.DEFAULT_INVITE_PRUNE_INTERVAL_SECONDS));
         VelocityPartyMessages messages = new VelocityPartyMessages(effective);
         return new VelocityStartupConfig(settings, messages);
     }
 
     private static int parseInt(Properties p, String key, int def) {
         String s = p.getProperty(key);
-        if (s == null || s.isBlank()) {
+        if (s == null || s.trim().isEmpty()) {
             return def;
         }
         try {

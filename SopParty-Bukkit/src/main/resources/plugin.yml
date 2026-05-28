@@ -10,3 +10,11 @@ commands:
   party:
     description: Party commands
     usage: /<command> [args]
+  sopparty:
+    description: SopParty administration commands
+    usage: /<command> reload
+
+permissions:
+  sopparty.admin.reload:
+    description: Allows reloading SopParty Velocity settings through the Bukkit bridge.
+    default: op
