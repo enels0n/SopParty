@@ -1,5 +1,6 @@
 package net.enelson.sopparty.bukkit;
 
+import org.bstats.bukkit.Metrics;
 import net.enelson.sopparty.api.SopPartyApi;
 import net.enelson.sopparty.bukkit.event.PartyViewSnapshot;
 import net.enelson.sopparty.bukkit.event.SopPartyCacheSyncEvent;
@@ -32,6 +33,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public final class SopPartyPlugin extends JavaPlugin implements CommandExecutor, TabCompleter, Listener {
+    private static final int BSTATS_PLUGIN_ID = 32809;
 
     private static final LegacyComponentSerializer AMP = LegacyComponentSerializer.legacyAmpersand();
     private static final LegacyComponentSerializer SECTION = LegacyComponentSerializer.legacySection();
@@ -51,9 +53,11 @@ public final class SopPartyPlugin extends JavaPlugin implements CommandExecutor,
 
     @Override
     public void onEnable() {
+        saveDefaultConfig();
         paperConfig.load(this);
         standaloneParties.reloadSettings();
         hookPlaceholderApi();
+        startMetricsIfConfigured();
 
         getServer().getServicesManager().register(SopPartyApi.class, partyApi, this, ServicePriority.Normal);
         getServer().getMessenger().registerOutgoingPluginChannel(this, PartyProtocol.CHANNEL);
@@ -550,5 +554,12 @@ public final class SopPartyPlugin extends JavaPlugin implements CommandExecutor,
             out = out.replace("{" + i + "}", String.valueOf(replacements[i]));
         }
         return out;
+    }
+
+    private void startMetricsIfConfigured() {
+        if (!getConfig().getBoolean("bstats.enabled", true)) {
+            return;
+        }
+        new Metrics(this, BSTATS_PLUGIN_ID);
     }
 }

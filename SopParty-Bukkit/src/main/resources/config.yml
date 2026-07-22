@@ -1,5 +1,8 @@
 # SopParty Paper configuration
 
+bstats:
+  enabled: true
+
 # First sync runs as soon as the player lands on this backend. If > 0, schedules an extra sync after N ticks for late Velocity/Paper binds.
 party-sync-delay-ticks: 0
 
